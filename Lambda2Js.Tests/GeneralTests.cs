@@ -215,6 +215,42 @@ namespace Lambda2Js.Tests
         }
 
         [TestMethod]
+        public void ReturnBool()
+        {
+            Expression<Func<MyClass, object>> expr = x => false;
+            var js = expr.CompileToJavascript();
+            Assert.AreEqual("false", js);
+
+            expr = x => true;
+            js = expr.CompileToJavascript();
+            Assert.AreEqual("true", js);
+        }       
+
+        [TestMethod]
+        public void SimpleConditionalExpression()
+        {
+            Expression<Func<MyClass, object>> expr =
+                x => x.Age > 50 ? 8:10;
+
+            var js = expr.CompileToJavascript(new JavascriptCompilationOptions(
+                    JsCompilationFlags.BodyOnly,
+                    MemberInitAsJson.ForAllTypes));
+            Assert.AreEqual(@"x.Age>50?8:10", js);          
+        }
+
+        [TestMethod]
+        public void ComplexConditionalExpression()
+        {
+            Expression<Func<MyClass, object>> expr =
+                x => x.Age > 50 ? x.Age < 70 ? (object)new { Foo = 2, Bar = 5 } : new { Foo = "AA", Bar = "BB" } : x.Name == "aaa" ? 1 as object : 5 as object;
+
+            var js = expr.CompileToJavascript(new JavascriptCompilationOptions(
+                    JsCompilationFlags.BodyOnly,
+                    MemberInitAsJson.ForAllTypes));
+            Assert.AreEqual(@"x.Age>50?x.Age<70?{Foo:2,Bar:5}:{Foo:""AA"",Bar:""BB""}:x.Name===""aaa""?1:5", js);
+        }        
+
+        [TestMethod]
         public void InlineNewMultipleThings()
         {
             Expression<Func<MyClass, object>> expr = x => new object[]

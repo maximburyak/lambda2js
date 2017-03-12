@@ -146,7 +146,68 @@ namespace Lambda2Js
 
         protected override Expression VisitConditional(ConditionalExpression node)
         {
+            
+            this.Visit(node.Test);
+            this.result.Write("?");
+            if (node.IfTrue.NodeType == ExpressionType.Conditional)
+            {                
+                this.Visit(node.IfTrue);                
+            }
+            else
+            {                
+                this.Visit(node.IfTrue);                
+            }
+
+            if (node.IfFalse != null)
+            {
+                this.result.Write(":");
+                if (node.IfFalse.NodeType == ExpressionType.Conditional)
+                {                    
+                    this.Visit(node.IfFalse);                    
+                }
+                else
+                {
+                    this.Visit(node.IfFalse);                 
+                }
+            }
+
             return node;
+
+
+
+            //this.result.Write("if(");
+            //this.Visit(node.Test);
+            //if (node.IfTrue.NodeType == ExpressionType.Conditional)
+            //{
+            //    this.result.Write("){ ");
+            //    this.Visit(node.IfTrue);
+            //    this.result.Write(" } ");
+            //}
+            //else
+            //{
+            //    this.result.Write("){ return ");
+            //    this.Visit(node.IfTrue);
+            //    this.result.Write("; } ");
+            //}
+
+            //if (node.IfFalse != null)
+            //{
+            //    if (node.IfFalse.NodeType == ExpressionType.Conditional)
+            //    {
+            //        this.result.Write(" else {");
+            //        this.Visit(node.IfFalse);
+            //        this.result.Write(" }");
+            //    }
+            //    else
+            //    {
+            //        this.result.Write(" else { return ");
+            //        this.Visit(node.IfFalse);
+            //        this.result.Write("; }");
+            //    }
+            //}
+
+            //return node;
+
         }
 
         protected override Expression VisitConstant(ConstantExpression node)
@@ -181,6 +242,16 @@ namespace Lambda2Js
                     this.result.Write(node.Value);
                     this.result.Write("/g");
                 }
+            }
+            else if (node.Type == typeof(bool))
+            {
+                using (this.result.Operation(JavascriptOperationTypes.Literal))
+                    this.result.Write((bool)node.Value ? "true" : "false");
+            }
+            else if (node.Type == typeof(char))
+            {
+                using (this.result.Operation(JavascriptOperationTypes.Literal))
+                    this.result.WriteLiteral(node.Value.ToString());
             }
             else if (node.Type.IsClosureRootType())
             {
